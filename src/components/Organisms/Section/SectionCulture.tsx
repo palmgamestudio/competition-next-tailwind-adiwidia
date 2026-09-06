@@ -8,17 +8,14 @@ import { convertSlug } from '@/utils/convert-slug';
 import CardCulture from '@/components/Molecules/Card/CardCulture';
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/utils/supabase';
+import {
+  CULTURE_WITH_RELATIONS,
+  getCategoryBySlug,
+  getProvinceBySlug,
+  type CultureWithRelations,
+} from '@/utils/supabase-queries';
 
-type CultureRow = {
-  id?: string | number | null;
-  slug: string;
-  title?: string | null;      // atau 'name' tergantung skema
-  name?: string | null;
-  location?: string | null;
-  media_url?: string | null;
-  category_slug?: string;
-  province_slug?: string;
-};
+type CultureRow = CultureWithRelations;
 
 export default function SectionCulture() {
   const { category, province, culture_slug } = useParams<{
@@ -33,23 +30,29 @@ export default function SectionCulture() {
   const [loading, setLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string>('');
 
-  const getTitle = (row: CultureRow) => row.title || row.name || '';
-  const getImage = (row: CultureRow) =>
-    row.media_url || '';
+  const getTitle = (row: CultureRow) => row.name || '';
+  const getImage = (row: CultureRow) => row.media_url || '';
   const getLocation = (row: CultureRow) => row.location || '';
 
   const fetchData = useCallback(async () => {
+    if (!category || !province) return;
+
     try {
       setLoading(true);
       setErrorMsg('');
 
+      const [cat, prov] = await Promise.all([
+        getCategoryBySlug(category),
+        getProvinceBySlug(province),
+      ]);
+
       let query = supabase
-          .from('view_cultures_with_category_province')
-          .select('*')
-          .eq('category_slug', category)
-          .eq('province_slug', province)
-          .order('name', { ascending: true, nullsFirst: false })
-          .limit(8);
+        .from('cultures')
+        .select(CULTURE_WITH_RELATIONS)
+        .eq('category_id', cat.id)
+        .eq('province_id', prov.id)
+        .order('name', { ascending: true, nullsFirst: false })
+        .limit(8);
 
       if (culture_slug) {
         query = query.neq('slug', culture_slug);

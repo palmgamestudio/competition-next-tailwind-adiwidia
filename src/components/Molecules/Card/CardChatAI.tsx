@@ -6,6 +6,12 @@ import ChatRoom from '@/components/Atoms/ParticleChatAI/ChatRoom';
 import { useParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@/utils/supabase';
+import {
+  CULTURE_WITH_RELATIONS,
+  cultureCategory,
+  cultureProvince,
+  type CultureWithRelations,
+} from '@/utils/supabase-queries';
 
 type Message = {
   id: string;
@@ -13,14 +19,7 @@ type Message = {
   content: string;
 };
 
-type CultureRow = {
-  id?: string | number | null;
-  slug: string;
-  name?: string | null;
-  content?: string | null; // HTML
-  category_slug?: string | null;
-  province_slug?: string | null;
-};
+type CultureRow = CultureWithRelations;
 
 function stripHtml(html?: string | null): string {
   if (!html) return '';
@@ -92,10 +91,8 @@ export default function CardChatAI() {
       if (!culture_slug) return;
 
       const { data, error } = await supabase
-        .from('view_cultures_with_category_province')
-        .select(
-          '*'
-        )
+        .from('cultures')
+        .select(CULTURE_WITH_RELATIONS)
         .eq('slug', culture_slug)
         .single();
 
@@ -134,10 +131,12 @@ export default function CardChatAI() {
             // ==== penting: gunakan konteks "cultures", bukan "artifact" ====
             cultureContext: {
               title: titleText,
-              category: culture?.category_slug ?? category ?? '',
-              province: culture?.province_slug ?? province ?? '',
+              category:
+                cultureCategory(culture)?.category_name ?? category ?? '',
+              province:
+                cultureProvince(culture)?.name ?? province ?? '',
               slug: culture?.slug ?? culture_slug ?? '',
-              content: descriptionText,
+              description: descriptionText,
             },
           }),
         });
@@ -170,11 +169,9 @@ export default function CardChatAI() {
     [
       isLoading,
       titleText,
-      culture?.category_slug,
+      culture,
       category,
-      culture?.province_slug,
       province,
-      culture?.slug,
       culture_slug,
       descriptionText,
     ]

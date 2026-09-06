@@ -41,7 +41,7 @@ export default function SectionDetailCulture() {
 
       const { data, error } = await supabase
         .from('cultures')
-        .select('*')
+        .select('id, slug, name, content, media_url')
         .eq('slug', culture_slug)
         .single();
 

@@ -20,10 +20,10 @@ export default function SectionMap() {
 
   const fetchMap = useCallback(async () => {
     const { data, error } = await supabase
-        .from('view_cultures_with_category_province')
-        .select('maps_url')
-        .eq('slug', culture_slug)
-        .single();
+      .from('cultures')
+      .select('maps_url')
+      .eq('slug', culture_slug)
+      .single();
 
     if (error || !data) {
       setEmbedSrc(null);
@@ -31,9 +31,7 @@ export default function SectionMap() {
     }
 
     const row = data as CultureRow;
-    const src = row.maps_url;
-
-    setEmbedSrc(src || null);
+    setEmbedSrc(row.maps_url || null);
   }, [culture_slug]);
 
   useEffect(() => {

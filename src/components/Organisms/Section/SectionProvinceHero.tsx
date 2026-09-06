@@ -9,18 +9,14 @@ import ButtonCustom from '@/components/Atoms/Button/ButtonCustom';
 import CardCulture from '@/components/Molecules/Card/CardCulture';
 import { convertSlug } from '@/utils/convert-slug';
 import { supabase } from '@/utils/supabase';
+import {
+  CULTURE_WITH_RELATIONS,
+  getCategoryBySlug,
+  getProvinceBySlug,
+  type CultureWithRelations,
+} from '@/utils/supabase-queries';
 
-type CultureRow = {
-  id: string | number;
-  slug: string;
-  name?: string | null;
-  title?: string | null;
-  location?: string | null;
-  media_url?: string | null;
-  category_slug?: string;
-  province_slug?: string;
-  // tambahkan field lain jika ada
-};
+type CultureRow = CultureWithRelations;
 
 export default function SectionProvinceHero() {
   const pathname = usePathname();
@@ -41,12 +37,14 @@ export default function SectionProvinceHero() {
 
   const hasMore = items.length < total;
 
-  const getTitle = (row: CultureRow) => row.name || row.title || '';
+  const getTitle = (row: CultureRow) => row.name || '';
   const getImage = (row: CultureRow) => row.media_url || '/image/destination/destination-1.png';
   const getLocation = (row: CultureRow) => row.location || province;
 
   const fetchCultures = useCallback(
     async (opts?: { reset?: boolean; keyword?: string }) => {
+      if (!category || !province) return;
+
       try {
         setLoading(true);
         setErrorMsg('');
@@ -54,21 +52,23 @@ export default function SectionProvinceHero() {
         const currentPage = opts?.reset ? 1 : page;
         const from = (currentPage - 1) * pageSize;
         const to = from + pageSize - 1;
-
         const kw = (opts?.keyword ?? search).trim();
 
+        const [cat, prov] = await Promise.all([
+          getCategoryBySlug(category),
+          getProvinceBySlug(province),
+        ]);
+
         let query = supabase
-          .from('view_cultures_with_category_province')
-          .select('*', { count: 'exact' })
-          .eq('category_slug', category)
-          .eq('province_slug', province)
+          .from('cultures')
+          .select(CULTURE_WITH_RELATIONS, { count: 'exact' })
+          .eq('category_id', cat.id)
+          .eq('province_id', prov.id)
           .order('name', { ascending: true, nullsFirst: false })
           .range(from, to);
 
-       if (kw) {
-          query = query.or(
-            `name.ilike.%${kw}%,title.ilike.%${kw}%,location.ilike.%${kw}%`
-          );
+        if (kw) {
+          query = query.or(`name.ilike.%${kw}%,location.ilike.%${kw}%`);
         }
 
         const { data, error, count } = await query;
@@ -76,10 +76,10 @@ export default function SectionProvinceHero() {
 
         setTotal(count ?? 0);
         if (opts?.reset) {
-          setItems(data ?? []);
+          setItems((data ?? []) as CultureRow[]);
           setPage(1);
         } else {
-          setItems(prev => [...prev, ...(data ?? [])]);
+          setItems((prev) => [...prev, ...((data ?? []) as CultureRow[])]);
         }
       } catch (err: unknown) {
         if (err instanceof Error) {

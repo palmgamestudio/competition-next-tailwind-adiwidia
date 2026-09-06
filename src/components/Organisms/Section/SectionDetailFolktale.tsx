@@ -64,15 +64,13 @@ function toYouTubeEmbed(url: string): string | null {
 }
 
 export default function SectionDetailFolktale() {
-  const { category, province, story_slug } = useParams<{
+  const { category, folktale_slug } = useParams<{
     category: string;
-    province: string;
-    story_slug: string;
+    folktale_slug: string;
   }>();
 
   const categoryParam = convertSlug({ slug: category || '' });
-  const provinceParam = convertSlug({ slug: province || '' });
-  const slugParam = convertSlug({ slug: story_slug || '' });
+  const slugParam = convertSlug({ slug: folktale_slug || '' });
 
   const [data, setData] = useState<StoryRow | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -82,24 +80,40 @@ export default function SectionDetailFolktale() {
     try {
       setLoading(true);
       setErrorMsg('');
-      console.log('story_slug', story_slug);
+
       const { data, error } = await supabase
         .from('stories')
         .select(
-          '*'
+          'id, slug, title, content_text, content_video_url, province_id, provinces(name, slug, description)'
         )
-        .eq('slug', story_slug)
+        .eq('slug', folktale_slug)
         .single();
 
       if (error) throw error;
-      setData(data as StoryRow);
+
+      const row = data as StoryRow & {
+        provinces?:
+          | { name?: string | null; slug?: string | null; description?: string | null }
+          | { name?: string | null; slug?: string | null; description?: string | null }[]
+          | null;
+      };
+      const province = Array.isArray(row.provinces)
+        ? row.provinces[0]
+        : row.provinces;
+
+      setData({
+        ...row,
+        province_name: province?.name ?? null,
+        province_slug: province?.slug ?? null,
+        province_description: province?.description ?? null,
+      });
     } catch (err: unknown) {
       setData(null);
       setErrorMsg(err instanceof Error ? err.message : 'Gagal memuat detail cerita rakyat.');
     } finally {
       setLoading(false);
     }
-  }, [story_slug]);
+  }, [folktale_slug]);
 
   useEffect(() => {
     fetchDetail();
@@ -128,7 +142,7 @@ export default function SectionDetailFolktale() {
         <div className="header-data">
           <div className="element-wrapper mb-[8px]">
             <p className="breadcrumb">
-              Beranda / {categoryParam} / {provinceParam} / <span>{slugParam}</span>
+              Beranda / {categoryParam} / <span>{slugParam}</span>
             </p>
           </div>
           <div className="element-wrapper">

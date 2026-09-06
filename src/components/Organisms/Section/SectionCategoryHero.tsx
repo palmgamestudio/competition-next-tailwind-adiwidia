@@ -8,18 +8,10 @@ import SectionHero from '@/components/Organisms/Section/SectionHero';
 import CardProvince from '@/components/Molecules/Card/CardProvince';
 import ButtonCustom from '@/components/Atoms/Button/ButtonCustom';
 import { convertSlug } from '@/utils/convert-slug';
-import { supabase } from '@/utils/supabase';
-
-type Row = {
-  id?: string | number | null;
-  category_slug: string;
-  province_slug: string;
-  province_name?: string | null;
-  name?: string | null;
-  province_description?: string | null;
-  total_cultures?: number | null;
-  total_characters?: number | null;
-};
+import {
+  listProvincesWithCultureCounts,
+  type ProvinceCultureCount,
+} from '@/utils/supabase-queries';
 
 export default function SectionCategoryHero() {
   const pathname = usePathname();
@@ -29,9 +21,8 @@ export default function SectionCategoryHero() {
     [category]
   );
 
-  // UI states
   const [search, setSearch] = useState<string>('');
-  const [items, setItems] = useState<Row[]>([]);
+  const [items, setItems] = useState<ProvinceCultureCount[]>([]);
   const [page, setPage] = useState<number>(1);
   const [pageSize] = useState<number>(12);
   const [total, setTotal] = useState<number>(0);
@@ -41,55 +32,36 @@ export default function SectionCategoryHero() {
   const hasMore = items.length < total;
   const prevSearchRef = useRef<string>('');
 
-  const getProvinceTitle = (row: Row) => row.province_name || row.name || '';
-  const getProvinceDesc = (row: Row) => row.province_description || '';
-  const getTotalCount = (row: Row) =>
-    row.total_cultures ?? row.total_characters ?? 0;
-
-  // Escape % dan _ untuk ILIKE
-  const escapeIlike = (kw: string) => kw.replace(/[%_]/g, '\\$&');
-
   const fetchProvinces = useCallback(
     async (opts?: { reset?: boolean; keyword?: string }) => {
+      if (!category) return;
+
       try {
         setLoading(true);
         setErrorMsg('');
 
         const currentPage = opts?.reset ? 1 : page;
-        const from = (currentPage - 1) * pageSize;
-        const to = from + pageSize - 1;
+        const keyword = opts?.keyword ?? search;
 
-        const rawKw = (opts?.keyword ?? search).trim();
-        const escKw = escapeIlike(rawKw);
+        const { items: rows, total: count } =
+          await listProvincesWithCultureCounts({
+            categorySlug: category,
+            keyword,
+            page: currentPage,
+            pageSize,
+          });
 
-        // Base select + filter kategori
-        let base = supabase
-          .from('view_culture_counts_by_category_province')
-          .select('*', { count: 'exact' })
-          .eq('category_slug', category);
-
-        // Search lebih dulu sebelum order/range
-        if (escKw) {
-          base = base.or(
-            `province_name.ilike.%${escKw}%`
-          );
-        }
-
-        const { data, error, count } = await base
-          .order('province_name', { ascending: true, nullsFirst: false })
-          .range(from, to);
-
-        if (error) throw error;
-
-        setTotal(count ?? 0);
+        setTotal(count);
         if (opts?.reset) {
-          setItems(data ?? []);
+          setItems(rows);
           setPage(1);
         } else {
-          setItems((prev) => [...prev, ...(data ?? [])]);
+          setItems((prev) => [...prev, ...rows]);
         }
-      } catch (err: any) {
-        setErrorMsg(err?.message ?? 'Failed to load provinces.');
+      } catch (err: unknown) {
+        setErrorMsg(
+          err instanceof Error ? err.message : 'Failed to load provinces.'
+        );
       } finally {
         setLoading(false);
       }
@@ -97,7 +69,6 @@ export default function SectionCategoryHero() {
     [category, page, pageSize, search]
   );
 
-  // Refetch saat kategori berubah (reset penuh)
   useEffect(() => {
     setSearch('');
     setItems([]);
@@ -107,12 +78,10 @@ export default function SectionCategoryHero() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [category]);
 
-  // Load halaman berikutnya
   useEffect(() => {
     if (page > 1) fetchProvinces();
   }, [page, fetchProvinces]);
 
-  // Auto reset saat input dikosongkan (tanpa submit)
   useEffect(() => {
     const prev = prevSearchRef.current;
     if (prev !== '' && search === '' && !loading) {
@@ -130,7 +99,7 @@ export default function SectionCategoryHero() {
     setItems([]);
     setTotal(0);
     setPage(1);
-    fetchProvinces({ reset: true, keyword: kw }); // anti-stale
+    fetchProvinces({ reset: true, keyword: kw });
   };
 
   const onLoadMore = () => {
@@ -143,7 +112,6 @@ export default function SectionCategoryHero() {
       subtitle="Jelajahi Kekayaan Budaya Nusantara"
       headline={`Menemukan Pesona ${categoryParam} Indonesia Dalam Satu Tempat`}
       description={`Adiwidia menghadirkan ragam ${categoryParam} Indonesia yang dikemas secara digital, interaktif, dan mudah diakses, agar budaya tetap hidup dan dikenal oleh generasi sekarang.`}
-      // Controlled: penting untuk InputSearch terbaru
       search={search}
       onChangeSearch={setSearch}
       onSubmitAction={onSubmitSearch}
@@ -162,9 +130,9 @@ export default function SectionCategoryHero() {
               <CardProvince
                 key={row.id ?? row.province_slug}
                 redirect={`${pathname}/${row.province_slug}`}
-                title={getProvinceTitle(row)}
-                description={getProvinceDesc(row)}
-                totalData={getTotalCount(row)}
+                title={row.province_name}
+                description={row.province_description || ''}
+                totalData={row.total_cultures}
               />
             ))}
 

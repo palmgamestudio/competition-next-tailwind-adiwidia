@@ -28,13 +28,14 @@ export async function POST(req: Request) {
       `• Kategori: ${ctx.category ?? ''}`,
       `• Provinsi/Region: ${ctx.province ?? ctx.region ?? ''}`,
       `• Slug: ${ctx.slug ?? ''}`,
-      `• Deskripsi: ${ctx.description ?? ''}`,
+      `• Deskripsi: ${ctx.description ?? ctx.content ?? ''}`,
       '',
       `Pertanyaan: ${message}`,
     ].join('\n');
 
+    const model = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
     const url =
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 
     const resp = await fetch(`${url}`, {
       method: 'POST',

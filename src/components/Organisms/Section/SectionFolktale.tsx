@@ -65,10 +65,10 @@ export default function SectionFolktale() {
           .from('view_stories_with_province')
           .select('*', { count: 'exact' });
 
-        // Search di beberapa kolom
+        // Search di kolom yang ada di schema baru
         if (escKw) {
           base = base.or(
-            `title.ilike.%${escKw}%,content_text.ilike.%${escKw}%,province_name.ilike.%${escKw}%,province_slug.ilike.%${escKw}%`
+            `title.ilike.%${escKw}%,content_text.ilike.%${escKw}%,province_name.ilike.%${escKw}%`
           );
         }
 
