@@ -42,9 +42,14 @@ export default function SectionDetailCollection() {
           .from('virtual_museum_items')
           .select('*')
           .eq('slug', collection_slug)
-          .single();
+          .maybeSingle();
 
       if (error) throw error;
+      if (!data) {
+        setErrorMsg('Koleksi tidak ditemukan.');
+        setData(null);
+        return;
+      }
       setData(data as ItemRow);
     } catch (err: unknown) {
       if (err instanceof Error) {

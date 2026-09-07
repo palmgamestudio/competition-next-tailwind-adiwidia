@@ -73,14 +73,12 @@ export default function CardChatAICollection() {
       setCtxError('');
       const { data, error } = await supabase
         .from('view_virtual_museum_items_with_category_province')
-        .select(
-          '*'
-        )
+        .select('*')
         .eq('slug', collection_slug)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
-      setItem(data as ItemRow);
+      setItem((data as ItemRow | null) ?? null);
     } catch (err: any) {
       setCtxError(err?.message ?? 'Gagal memuat konteks koleksi.');
       setItem(null);

@@ -50,26 +50,31 @@ export function cultureProvince(
   return one(row.provinces);
 }
 
-export async function getCategoryBySlug(slug: string): Promise<CategoryRow> {
+/** Use maybeSingle — .single() returns HTTP 406 (PGRST116) when 0 rows. */
+export async function getCategoryBySlug(
+  slug: string
+): Promise<CategoryRow | null> {
   const { data, error } = await supabase
     .from("categories")
     .select("id, slug, category_name")
     .eq("slug", slug)
-    .single();
+    .maybeSingle();
 
   if (error) throw error;
-  return data as CategoryRow;
+  return (data as CategoryRow | null) ?? null;
 }
 
-export async function getProvinceBySlug(slug: string): Promise<ProvinceRow> {
+export async function getProvinceBySlug(
+  slug: string
+): Promise<ProvinceRow | null> {
   const { data, error } = await supabase
     .from("provinces")
     .select("id, slug, name, description")
     .eq("slug", slug)
-    .single();
+    .maybeSingle();
 
   if (error) throw error;
-  return data as ProvinceRow;
+  return (data as ProvinceRow | null) ?? null;
 }
 
 export type ProvinceCultureCount = {
@@ -88,6 +93,9 @@ export async function listProvincesWithCultureCounts(opts: {
   pageSize?: number;
 }): Promise<{ items: ProvinceCultureCount[]; total: number }> {
   const category = await getCategoryBySlug(opts.categorySlug);
+  if (!category) {
+    return { items: [], total: 0 };
+  }
 
   const { data, error } = await supabase
     .from("cultures")

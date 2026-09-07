@@ -94,10 +94,10 @@ export default function CardChatAI() {
         .from('cultures')
         .select(CULTURE_WITH_RELATIONS)
         .eq('slug', culture_slug)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
-      setCulture(data as CultureRow);
+      setCulture((data as CultureRow | null) ?? null);
     } catch (err: any) {
       setCtxError(err?.message ?? 'Gagal memuat konteks budaya.');
       setCulture(null);

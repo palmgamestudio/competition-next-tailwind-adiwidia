@@ -43,9 +43,14 @@ export default function SectionDetailCulture() {
         .from('cultures')
         .select('id, slug, name, content, media_url')
         .eq('slug', culture_slug)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      if (!data) {
+        setErrorMsg('Budaya tidak ditemukan.');
+        setData(null);
+        return;
+      }
       setData(data as CultureRow);
     } catch (err: any) {
       setErrorMsg(err?.message ?? 'Gagal memuat detail budaya.');

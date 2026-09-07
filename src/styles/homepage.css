@@ -1050,5 +1050,76 @@
         @apply lg:rounded-[60px];
     }
     /* END PAGE MAIN: SECTION HERO */
+
+    /* SECTION MUSEUM 360 */
+    section.section-museum {
+        @apply flex flex-col gap-[24px];
+        @apply lg:gap-[32px];
+    }
+
+    section.section-museum .museum-selector {
+        @apply w-full;
+    }
+
+    section.section-museum .museum-selector-track {
+        @apply flex gap-[8px] overflow-x-auto pb-[4px];
+    }
+
+    section.section-museum .museum-selector-pill {
+        @apply shrink-0 px-[16px] py-[10px] text-[0.813rem] rounded-full border border-dark/[0.12] text-dark/70 bg-light whitespace-nowrap transition-colors;
+        @apply hover:border-primary/40 hover:text-primary;
+    }
+
+    section.section-museum .museum-selector-pill.active {
+        @apply bg-primary text-light border-primary;
+    }
+
+    section.section-museum .museum-viewer {
+        @apply relative w-full min-h-[420px] h-[60vh] max-h-[720px] rounded-[32px] border border-dark/[0.12] overflow-hidden bg-dark/[0.04];
+        @apply md:rounded-[40px] lg:rounded-[60px] lg:h-[65vh];
+    }
+
+    section.section-museum .museum-panorama {
+        @apply w-full h-full;
+    }
+
+    section.section-museum .museum-viewer-hint {
+        @apply absolute bottom-[12px] left-1/2 -translate-x-1/2 z-10 px-[12px] py-[6px] text-[0.75rem] text-light/90 bg-dark/50 rounded-full pointer-events-none;
+    }
+
+    section.section-museum .museum-bottom {
+        @apply w-full grid grid-cols-1 gap-[24px];
+        @apply lg:grid-cols-[1fr_400px] lg:gap-[40px];
+    }
+
+    section.section-museum .museum-description.content-card {
+        @apply w-full h-fit flex flex-col gap-[16px] p-[16px] rounded-[16px] border border-dark/[0.12];
+        @apply lg:p-[20px] lg:rounded-[20px];
+    }
+
+    section.section-museum .museum-description .body-header {
+        @apply flex items-center gap-[8px];
+    }
+
+    section.section-museum .museum-description .header-icon {
+        @apply flex items-center justify-center size-[28px] rounded-full bg-primary;
+    }
+
+    section.section-museum .museum-description .header-title {
+        @apply text-[1rem] font-medium;
+    }
+
+    section.section-museum .museum-chat-wrap {
+        @apply w-full min-h-[360px];
+    }
+
+    section.section-museum .museum-chat-wrap .card-chat {
+        @apply h-full min-h-[360px];
+    }
+
+    section.section-museum .museum-empty {
+        @apply w-full max-w-xl py-[40px];
+    }
+    /* END SECTION MUSEUM 360 */
 }
 /* END UTILITIES */

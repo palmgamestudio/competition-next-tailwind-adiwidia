@@ -23,7 +23,7 @@ export default function SectionMap() {
       .from('cultures')
       .select('maps_url')
       .eq('slug', culture_slug)
-      .single();
+      .maybeSingle();
 
     if (error || !data) {
       setEmbedSrc(null);
@@ -38,7 +38,7 @@ export default function SectionMap() {
     fetchMap();
   }, [fetchMap]);
 
-  if (category !== 'destinasi-budaya' || !embedSrc) return null;
+  if (!embedSrc) return null;
 
   return (
       <section className="section-map section-mt-gap">

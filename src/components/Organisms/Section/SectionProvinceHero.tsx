@@ -59,6 +59,17 @@ export default function SectionProvinceHero() {
           getProvinceBySlug(province),
         ]);
 
+        if (!cat || !prov) {
+          setItems([]);
+          setTotal(0);
+          setErrorMsg(
+            !cat
+              ? `Kategori “${category}” tidak ditemukan.`
+              : `Provinsi “${province}” tidak ditemukan.`
+          );
+          return;
+        }
+
         let query = supabase
           .from('cultures')
           .select(CULTURE_WITH_RELATIONS, { count: 'exact' })

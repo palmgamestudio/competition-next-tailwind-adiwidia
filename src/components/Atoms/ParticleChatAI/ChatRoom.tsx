@@ -21,12 +21,12 @@ export default function ChatRoom({
   brandLogoSrc = '/image/brand/logo.svg',
 }: ChatRoomProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const endRef = useRef<HTMLDivElement>(null);
 
-  // Auto scroll ke bawah saat pesan bertambah / loading berubah
+  // Auto scroll hanya di dalam chat-room, jangan geser seluruh halaman
   useEffect(() => {
-    // scroll smooth jika viewport sudah di-mount
-    endRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const el = containerRef.current;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
   }, [messages, isLoading]);
 
   return (
@@ -79,8 +79,6 @@ export default function ChatRoom({
           </div>
         </div>
       )}
-
-      <div ref={endRef} />
     </div>
   );
 }

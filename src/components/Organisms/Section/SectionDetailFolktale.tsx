@@ -87,9 +87,14 @@ export default function SectionDetailFolktale() {
           'id, slug, title, content_text, content_video_url, province_id, provinces(name, slug, description)'
         )
         .eq('slug', folktale_slug)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      if (!data) {
+        setData(null);
+        setErrorMsg('Cerita rakyat tidak ditemukan.');
+        return;
+      }
 
       const row = data as StoryRow & {
         provinces?:
@@ -223,6 +228,7 @@ export default function SectionDetailFolktale() {
           </div>
         </div>
 
+        {chatContext && <CardChatAIStory context={chatContext} />}
       </div>
     </section>
   );
