@@ -33,42 +33,60 @@ export async function POST(req: Request) {
       `Pertanyaan: ${message}`,
     ].join('\n');
 
-    const model = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
-    const url =
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+    const primaryModel = process.env.GEMINI_MODEL || 'gemini-3.1-flash';
+    const liteModel = process.env.GEMINI_MODEL_LITE || 'gemini-3.1-flash-lite';
+    const models = [...new Set([primaryModel, liteModel])];
 
-    const resp = await fetch(`${url}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': apiKey, // pakai header, bukan query param
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            role: 'user',
-            parts: [{ text: prompt }],
-          },
-        ],
-        generationConfig: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 1024,
+    const payload = {
+      contents: [
+        {
+          role: 'user',
+          parts: [{ text: prompt }],
         },
-      }),
-    });
+      ],
+      generationConfig: {
+        temperature: 0.7,
+        topK: 40,
+        topP: 0.95,
+        maxOutputTokens: 1024,
+      },
+    };
 
-    const data = await resp.json();
+    let data: any = null;
+    let usedModel = primaryModel;
+    let lastDetail = '';
 
-    if (!resp.ok) {
-      // Gemini kadang mengembalikan { error: { message, status } }
-      const detail =
+    for (const model of models) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': apiKey,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      data = await resp.json();
+
+      if (resp.ok) {
+        usedModel = model;
+        break;
+      }
+
+      lastDetail =
         data?.error?.message ||
         data?.error?.status ||
         `HTTP ${resp.status} ${resp.statusText}`;
-      console.error('Gemini API error:', detail, 'payload:', data);
-      return Response.json({ error: `Gemini API error: ${detail}` }, { status: 502 });
+      console.error(`Gemini API error (${model}):`, lastDetail, 'payload:', data);
+      data = null;
+    }
+
+    if (!data) {
+      return Response.json(
+        { error: `Gemini API error: ${lastDetail || 'all models failed'}` },
+        { status: 502 }
+      );
     }
 
     // Robust extraction: join semua parts.text
@@ -81,7 +99,7 @@ export async function POST(req: Request) {
       parts.join('\n').trim() ||
       'Maaf, saya tidak dapat memberikan jawaban saat ini.';
 
-    return Response.json({ response: aiResponse });
+    return Response.json({ response: aiResponse, model: usedModel });
   } catch (err: any) {
     console.error('Chat API error:', err?.stack || err?.message || err);
     return Response.json(
