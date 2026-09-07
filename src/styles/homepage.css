@@ -150,11 +150,13 @@
         @apply xl:text-[2.25rem];
     }
 
-    p.description {
+    p.description,
+    div.description {
         @apply text-[0.913rem] text-dark/[0.62];
     }
 
-    p.description.small {
+    p.description.small,
+    div.description.small {
         @apply text-[0.875rem];
     }
 
@@ -272,6 +274,26 @@
 
     .card-chat .chat-room {
         @apply p-[20px] bg-light h-[400px] overflow-y-auto flex flex-col gap-[16px];
+        overscroll-behavior: contain;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(0, 0, 0, 0.28) transparent;
+    }
+
+    .card-chat .chat-room::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .card-chat .chat-room::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .card-chat .chat-room::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.22);
+        border-radius: 999px;
+    }
+
+    .card-chat .chat-room::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 0, 0, 0.4);
     }
 
     .card-chat .chat-room .room-chat-answer {
@@ -283,7 +305,35 @@
     }
 
     .card-chat .chat-room .room-chat-answer .answer {
-        @apply w-full p-[12px] bg-[#f7f7f7] rounded-[8px] text-[0.813rem];
+        @apply w-full p-[12px] bg-[#f7f7f7] rounded-[8px] text-[0.875rem] text-dark/[0.8];
+    }
+
+    .card-chat .chat-room .room-chat-answer .answer.chat-markdown p {
+        @apply mb-2 last:mb-0;
+    }
+
+    .card-chat .chat-room .room-chat-answer .answer.chat-markdown ul {
+        @apply list-disc pl-5 mb-2 last:mb-0;
+    }
+
+    .card-chat .chat-room .room-chat-answer .answer.chat-markdown ol {
+        @apply list-decimal pl-5 mb-2 last:mb-0;
+    }
+
+    .card-chat .chat-room .room-chat-answer .answer.chat-markdown li {
+        @apply mb-1 last:mb-0;
+    }
+
+    .card-chat .chat-room .room-chat-answer .answer.chat-markdown strong {
+        @apply font-semibold text-dark;
+    }
+
+    .card-chat .chat-room .room-chat-answer .answer.chat-markdown a {
+        @apply text-primary underline;
+    }
+
+    .card-chat .chat-room .room-chat-answer .answer.chat-markdown code {
+        @apply text-[0.813rem] px-1 py-0.5 rounded bg-dark/[0.06];
     }
 
     .card-chat .chat-room .room-chat-question {
@@ -291,7 +341,7 @@
     }
 
     .card-chat .chat-room .room-chat-question .question {
-        @apply w-full p-[12px] bg-primary rounded-[8px] text-[0.813rem] text-light;
+        @apply w-full p-[12px] bg-primary rounded-[8px] text-[0.875rem] text-light;
     }
     /* END CARD CHAT AI */
 
@@ -901,8 +951,12 @@
         @apply flex flex-col gap-[8px];
     }
 
+    section.section-detail-culture .detail-culture-content .content-card .card-body .body-content .description p {
+        @apply mb-2 last:mb-0;
+    }
+
     section.section-detail-culture .detail-culture-content .content-card .card-body .body-content * {
-        @apply text-[0.875rem] text-dark/[0.62];
+        @apply text-[0.938rem] text-dark/[0.62];
     }
 
     section.section-detail-culture .detail-culture-content .content-card .card-body .body-content .content-video {

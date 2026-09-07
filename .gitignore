@@ -17,6 +17,9 @@
 /.next/
 /out/
 
+# local seed generators (SQL seeds live in supabase/seed)
+/scripts/
+
 # production
 /build
 

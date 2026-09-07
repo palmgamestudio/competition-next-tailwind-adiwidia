@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useEffect, useRef } from 'react';
+import ChatMarkdown from '@/components/Atoms/ParticleChatAI/ChatMarkdown';
 
 type ChatMessage = {
   id: string;
@@ -12,7 +13,7 @@ type ChatMessage = {
 interface ChatRoomProps {
   messages?: ChatMessage[];
   isLoading?: boolean;
-  brandLogoSrc?: string; // avatar asisten
+  brandLogoSrc?: string;
 }
 
 export default function ChatRoom({
@@ -22,7 +23,6 @@ export default function ChatRoom({
 }: ChatRoomProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Auto scroll hanya di dalam chat-room, jangan geser seluruh halaman
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -30,7 +30,13 @@ export default function ChatRoom({
   }, [messages, isLoading]);
 
   return (
-    <div className="chat-room" ref={containerRef}>
+    <div
+      className="chat-room"
+      ref={containerRef}
+      data-lenis-prevent
+      data-lenis-prevent-wheel
+      data-lenis-prevent-touch
+    >
       {messages.map((msg) =>
         msg.role === 'user' ? (
           <div key={msg.id} className="room-chat-question">
@@ -47,12 +53,11 @@ export default function ChatRoom({
                 className="profile-image"
               />
             </div>
-            <p className="answer whitespace-pre-wrap">{msg.content}</p>
+            <ChatMarkdown className="answer" content={msg.content} />
           </div>
         )
       )}
 
-      {/* Indikator "asisten sedang mengetik" */}
       {isLoading && (
         <div className="room-chat-answer">
           <div className="answer-profile">

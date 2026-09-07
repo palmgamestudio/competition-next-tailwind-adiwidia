@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { supabase } from "@/utils/supabase";
 import { Icon } from "@iconify/react/dist/iconify.js";
@@ -17,24 +17,45 @@ type CategoryRow = {
 
 export default function Topbar({ onClickAction }: Props) {
   const [categories, setCategories] = useState<CategoryRow[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
 
     (async () => {
-      const { data, error } = await supabase
-        .from("categories")
-        .select("id, slug, category_name")
-        .order("category_name", { ascending: true });
+      try {
+        const { data, error } = await supabase
+          .from("categories")
+          .select("id, slug, category_name")
+          .order("category_name", { ascending: true });
 
-      if (cancelled || error) return;
-      setCategories((data ?? []) as CategoryRow[]);
+        if (cancelled || error) return;
+        setCategories((data ?? []) as CategoryRow[]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     })();
 
     return () => {
       cancelled = true;
     };
   }, []);
+
+  if (loading) {
+    return (
+      <div className="topbar" aria-busy="true" aria-label="Memuat kategori">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div
+            key={i}
+            className="topbar-link pointer-events-none animate-pulse"
+          >
+            <div className="link-icon bg-dark/10" />
+            <span className="inline-block h-3 w-20 rounded bg-dark/10" />
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="topbar">

@@ -7,7 +7,17 @@ type Props = {
 }
 
 export default function Description({value, className, size = "normal"}: Props) {
-    return (
-        <p className={`description ${className} ${size}`} dangerouslySetInnerHTML={{ __html: value }}/>
-    )
+    const isHtml = /<\/?[a-z][\s\S]*>/i.test(value);
+    const classNames = `description ${className ?? ""} ${size}`.trim();
+
+    if (isHtml) {
+        return (
+            <div
+                className={classNames}
+                dangerouslySetInnerHTML={{ __html: value }}
+            />
+        );
+    }
+
+    return <p className={classNames}>{value}</p>;
 }

@@ -7,7 +7,11 @@ export function useLenisScroll() {
     const lenisRef = useRef<Lenis | null>(null);
 
     useEffect(() => {
-        const lenis = new Lenis();
+        const lenis = new Lenis({
+            prevent: (node) =>
+                node instanceof HTMLElement &&
+                Boolean(node.closest('.chat-room, [data-lenis-prevent]')),
+        });
         lenisRef.current = lenis;
 
         function raf(time: number) {
