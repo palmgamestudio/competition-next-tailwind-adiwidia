@@ -5,7 +5,7 @@
 @layer components {
     /* FORM */
     .form-input .input {
-        @apply relative w-full py-[16px] px-[20px] text-[0.875rem] text-dark rounded-full bg-light border border-dark/[0.12];
+        @apply relative w-full py-[16px] pl-[20px] pr-[56px] text-[0.875rem] text-dark rounded-full bg-light border border-dark/[0.12];
         @apply placeholder:text-[0.875rem] placeholder:text-dark/[0.42];
         @apply focus:outline-none focus:ring-0 focus:border-dark/[0.24];
     }
@@ -15,7 +15,7 @@
     }
 
     .form-input.small .input {
-        @apply py-[12px] px-[16px] text-[0.813rem];
+        @apply py-[12px] pl-[16px] pr-[52px] text-[0.813rem];
         @apply placeholder:text-[0.813rem];
     }
 
