@@ -128,7 +128,7 @@ export default function SectionCulture() {
           ))}
 
         {!loading && !errorMsg && items.length === 0 && (
-          <div className="text-sm text-gray-500 flex justify-center w-full">
+          <div className="col-span-full w-full text-center text-sm text-gray-500">
             Belum ada data {categoryParam.toLowerCase()} serupa.
           </div>
         )}
